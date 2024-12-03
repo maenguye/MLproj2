@@ -6,6 +6,7 @@ from pathlib import Path
 import torch
 
 
+
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, images_dir, labels_dir):
 
@@ -16,7 +17,6 @@ class Dataset(torch.utils.data.Dataset):
         self.image_paths = sorted(list(self.images_dir.glob("*.png")))
         self.label_paths = sorted(list(self.labels_dir.glob("*.png")))
         assert len(self.image_paths) == len(self.label_paths), "Mismatch between image and label files"
-
         # Preload image and label data
         self.image_data_list = [self.load_image(image_path) for image_path in self.image_paths]
         self.label_data_list = [self.load_label(label_path) for label_path in self.label_paths]
@@ -31,9 +31,9 @@ class Dataset(torch.utils.data.Dataset):
         label = self.label_data_list[index]
         return image, label
 
-    def load_image(self, image_path):
+    def load_image(self,image_path):
         # Load PNG image as a NumPy array
-        image = cv2.imread(image_path)
+        image = cv2.imread(str(image_path))
         gray = cv2.cvtColor (image, cv2.COLOR_BGR2GRAY)
         normalized = gray / 255.0
         blur = cv2.GaussianBlur(normalized, (5, 5), 0) #can find the best kernel size 
@@ -41,7 +41,7 @@ class Dataset(torch.utils.data.Dataset):
         return blur
     
     def load_label(self,image_path):
-        label = cv2.imread(image_path)
+        label = cv2.imread(str(image_path))
         # binarize labels
         gray = cv2.cvtColor (label, cv2.COLOR_BGR2GRAY)
         normalized = gray / 255.0
