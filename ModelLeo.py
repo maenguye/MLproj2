@@ -7,7 +7,6 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision.io import decode_image
 import torchvision.transforms.functional
-import torchvision.transforms.v2.functional as F
 import torchvision 
 import numpy as np
 import cv2
@@ -49,7 +48,7 @@ class Dataset(torch.utils.data.Dataset):
     def load_label(self,image_path):
         label = cv2.imread(str(image_path))
         # binarize labels
-        toGray=torchvision.transforms.Grayscale(num_output_channels=3)
+        toGray=torchvision.transforms.Grayscale(1)
         gray = toGray(torchvision.transforms.functional.to_tensor(label))
         tresholded=torch.where(gray>0.5,1.0,0.0) #tresholding
         return torchvision.transforms.functional.to_pil_image(tresholded)
@@ -77,11 +76,21 @@ def show(imgs):
     plt.show()
         
 # Load the model
-weights = ResNet50_Weights.IMAGENET1K_V2
+weights = ResNet50_Weights.DEFAULT
 transforms = weights.transforms()
 
-model=fcn_resnet50(weights_backbone=weights, progress=True,numclasses=2)
+model=fcn_resnet50(weights_backbone=weights, progress=True,num_classes=2)
+
+#freeze the backbone
+for name,param in model.backbone.named_parameters():
+    param.requires_grad=False
+    
+#assert that the classifier will be afected by training
+for name,param in model.classifier.named_parameters():
+    param.requires_grad=True
 model = model.train()
+
+
 
 # Path to the dataset
 trainData_path="dataset/training/images"
@@ -95,10 +104,10 @@ dataloader=DataLoader(dataset)
 
 
 
-
-
 #fine tune 
-optimizer=torch.optim.Adam(model.parameters(), lr=0.001)
+params=[p for p in model.parameters() if p.requires_grad]
+print('Number of parameters that require grad:', len(params))
+optimizer=torch.optim.Adam(params, lr=0.001)
 loss_fn=torch.nn.CrossEntropyLoss()
 
 
@@ -111,18 +120,27 @@ def train_one_epoch(epoch_index, tb_writer):
     # index and do some intra-epoch reporting
     for i in range (len(dataset)):
         
-        images,labels = np.array(dataset[i])
+        images,labels = dataset[i]
         # Zero your gradients for every batch!
         optimizer.zero_grad()
 
         # Make predictions for this batch
         #model take batch of pil images or single tensor
         tensor_image=torchvision.transforms.functional.to_tensor(images).unsqueeze(0)
+        
         outputs = model(tensor_image)["out"]
+        
+        #convert output to mask
+        pred_mask=torch.nn.functional.softmax(outputs, dim=1)[0,1,:,:] #we are interested in the second channel that corresponds to the first class after the background
+        predicted_mask_tresholded=torch.where(pred_mask>0.5,1.0,0.0).unsqueeze(0)
 
-        tensor_labels=torchvision.transforms.functional.to_tensor(labels).unsqueeze(0)
+        #convert labels to tensor
+        tensor_labels=torchvision.transforms.functional.to_tensor(labels)
+        
         # Compute the loss and its gradients
-        loss = loss_fn(outputs, tensor_labels)
+        loss = loss_fn(predicted_mask_tresholded, tensor_labels)
+        loss.requires_grad = True
+        
         loss.backward()
 
         # Adjust learning weights
@@ -130,10 +148,10 @@ def train_one_epoch(epoch_index, tb_writer):
 
         # Gather data and report
         running_loss += loss.item()
-        if i % 1000 == 999:
-            last_loss = running_loss / 1000 # loss per batch
+        if i % 100 == 90:
+            last_loss = running_loss / 90 # loss per batch
             print('  batch {} loss: {}'.format(i + 1, last_loss))
-            tb_x = epoch_index * len(dataloader) + i + 1
+            tb_x = epoch_index * len(dataset) + i + 1
             tb_writer.add_scalar('Loss/train', last_loss, tb_x)
             running_loss = 0.
 
@@ -162,10 +180,25 @@ for epoch in range(EPOCHS):
 
     # Disable gradient computation and reduce memory consumption.
     with torch.no_grad():
-        for i, vdata in enumerate(dataloader):
-            vlabels,vinputs = vdata
-            voutputs = model(vinputs)
-            vloss = loss_fn(voutputs, vlabels)
+        for i in range(len(dataset[:10])):
+            vimages,vlabels = dataset[i]
+            # Make predictions for this batch
+            v_tensor_image=torchvision.transforms.functional.to_tensor(vimages).unsqueeze(0)
+        
+            v_outputs = model(v_tensor_image)["out"]
+        
+            
+
+            #convert labels to tensor
+            v_tensor_labels=torchvision.transforms.functional.to_tensor(vlabels)
+                
+            voutputs = model(v_tensor_image)["out"]
+            
+            #convert output to mask
+            v_pred_mask=torch.nn.functional.softmax(v_outputs, dim=1)[0,1,:,:] #we are interested in the second channel that corresponds to the first class after the background
+            v_predicted_mask_tresholded=torch.where(v_pred_mask>0.5,1.0,0.0).unsqueeze(0)
+            
+            vloss = loss_fn(v_predicted_mask_tresholded, v_tensor_labels)
             running_vloss += vloss
 
     avg_vloss = running_vloss / (i + 1)
