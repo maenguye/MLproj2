@@ -5,7 +5,7 @@ import numpy as np
 import skimage
 from pathlib import Path
 import matplotlib.pyplot as plt
-
+import torchvisions.transforms as transforms
 
 class RoadDataset(torch.utils.data.Dataset):
     
@@ -32,6 +32,8 @@ class RoadDataset(torch.utils.data.Dataset):
         if self.augmented_data:
             pass
             
+    
+
         print(f"Found {len(self.image_paths)} image-label pairs")
         
     def __len__(self):
@@ -54,10 +56,10 @@ class RoadDataset(torch.utils.data.Dataset):
     def load_label(self,image_path):
         label = skimage.io.imread(str(image_path))
         # binarize labels
-        gray=torchvision.transforms.Grayscale(1)
-        label=gray(torchvision.transforms.functional.to_tensor(label))
-        label_bin=torch.where(label>0.5,1.0,0.0)
-        return label_bin
+        toGray=torchvision.transforms.Grayscale(1)
+        gray = toGray(torchvision.transforms.functional.to_tensor(label))
+        tresholded=torch.where(gray>0.5,1.0,0.0) #tresholding
+        return torchvision.transforms.functional.to_pil_image(tresholded)
     
 dataset=RoadDataset("dataset/training/images","dataset/training/groundtruth")[0]
 print(dataset[0].shape,dataset[1].shape)
