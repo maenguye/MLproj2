@@ -18,8 +18,13 @@ def patch_to_label(patch):
 
 def mask_to_submission_strings(image_filename):
     """Reads a single image and outputs the strings that should go into the submission file"""
-    img_number = int(re.search(r"\d+", image_filename).group(0))
+    match = re.search(r"prediction_(\d+)", image_filename)
+    if match:
+        img_number = int(match.group(1)) 
     im = mpimg.imread(image_filename)
+    patch_size = 16
+    #img_number = int(re.search(r"\d+", image_filename).group(0))
+    #im = mpimg.imread(image_filename)
     patch_size = 16
     for j in range(0, im.shape[1], patch_size):
         for i in range(0, im.shape[0], patch_size):
@@ -37,10 +42,10 @@ def masks_to_submission(submission_filename, *image_filenames):
 
 
 if __name__ == '__main__':
-    submission_filename = 'dummy_submission.csv'
-    image_filenames = []
-    for i in range(1, 51):
-        image_filename = 'training/groundtruth/satImage_' + '%.3d' % i + '.png'
-        print image_filename
-        image_filenames.append(image_filename)
-    masks_to_submission(submission_filename, *image_filenames)
+    print("mask_to_submission.py")
+    #submission_filename = 'dummy_submission.csv'
+    #image_filenames = []
+    #for i in range(1, 51):
+    #    image_filename = '/Users/maelynenguyen/Desktop/79ca5c85-0d00-45fd-81e9-aa787898ebf5_epfml-segmentation/training/' + '%.3d' % i + '.png'
+    #    image_filenames.append(image_filename)
+    #masks_to_submission(submission_filename, *image_filenames)

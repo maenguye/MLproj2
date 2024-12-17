@@ -5,7 +5,7 @@ import numpy as np
 import skimage
 from pathlib import Path
 import matplotlib.pyplot as plt
-
+import torchvisions.transforms as transforms
 
 class RoadDataset(torch.utils.data.Dataset):
     
@@ -32,6 +32,8 @@ class RoadDataset(torch.utils.data.Dataset):
         assert len(self.image_paths) == len(self.label_paths), "Mismatch between image and label files"
         
             
+    
+
         print(f"Found {len(self.image_paths)} image-label pairs")
         if self.augmented_data:
             print("Data will be augmented 8 times the original size") 
@@ -71,10 +73,10 @@ class RoadDataset(torch.utils.data.Dataset):
         
         label = skimage.io.imread(str(image_path))
         # binarize labels
-        gray=torchvision.transforms.Grayscale(1)
-        label=gray(torchvision.transforms.functional.to_tensor(label))
-        label_bin=torch.where(label>0.5,1.0,0.0)
-        return label_bin
+        toGray=torchvision.transforms.Grayscale(1)
+        gray = toGray(torchvision.transforms.functional.to_tensor(label))
+        tresholded=torch.where(gray>0.5,1.0,0.0) #tresholding
+        return torchvision.transforms.functional.to_pil_image(tresholded)
     
     def load_augmented(self,indexes):
         """ Load augmented data, by rotating the images and the related labels, or their inverted versions, by 90 degrees 
