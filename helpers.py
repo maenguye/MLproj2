@@ -151,13 +151,15 @@ def extract_labels(filename, num_images): #given function
 
 
 def load_data(image_dir, gt_dir, training_size):
-      files = '/content/drive/MyDrive/Colab Notebooks/datasets/training/images/satImage_'
+    #   files = '/content/drive/MyDrive/Colab Notebooks/datasets/training/images/satImage_'
+      files = image_dir + '/satImage_'
       n = 100
       print("Loading " + str(n) + " images")
       imgs = [mpimg.imread(files + '%.3d' % i + '.png') for i in range(1,n)]
       print(imgs[0][2])
 
-      gt_dir ='/content/drive/MyDrive/Colab Notebooks/datasets/training/groundtruth/satImage_'
+    #   gt_dir ='/content/drive/MyDrive/Colab Notebooks/datasets/training/groundtruth/satImage_'
+      gt_dir = gt_dir + '/satImage_'
       print("Loading " + str(n) + " images")
       gt_imgs = [mpimg.imread(gt_dir + '%.3d' % i + '.png') for i in range(1,n)]
 
@@ -252,32 +254,6 @@ def masks_to_submission(submission_filename, *image_filenames):
 
 
 
-    submission_filename = 'submission__epochs.csv'
-    image_filenames = []
-    prediction_test_dir = "predictions__epochs/"
-    if not os.path.isdir(prediction_test_dir):
-        os.mkdir(prediction_test_dir)
-    pred_filenames = []
-    for i in range(1, TEST_SIZE+1):
-        image_filename = '/content/drive/MyDrive/Colab Notebooks/datasets/test_set_images/test_' + str(i) +"/test_"+ str(i) +".png"
-        image_filenames.append(image_filename)
-    test_imgs = [mpimg.imread(image_filenames[i]) for i in range(TEST_SIZE)]
-    for i in range(TEST_SIZE):
-        pimg = get_prediction(test_imgs[i],model,window_size)
-        #save prediction next to the image
-        cimg = concatenate_images(test_imgs[i], pimg)
-        Image.fromarray(cimg).save(prediction_test_dir + "prediction_mask_" + str(i) + ".png")
-        w = pimg.shape[0]
-        h = pimg.shape[1]
-        gt_img_3c = numpy.zeros((w, h, 3), dtype=numpy.uint8)
-        gt_img8 = img_float_to_uint8(pimg)
-        gt_img_3c[:,:,0] = gt_img8
-        gt_img_3c[:,:,1] = gt_img8
-        gt_img_3c[:,:,2] = gt_img8
-        pred_filename = prediction_test_dir + "prediction_" + str(i+1) + ".png"
-        Image.fromarray(gt_img_3c).save(pred_filename)
-        pred_filenames.append(pred_filename)
-    masks_to_submission(submission_filename, *pred_filenames)
 
 
 def make_img_overlay(img, predicted_img):
@@ -305,36 +281,6 @@ def label_to_img(imgwidth, imgheight, w, h, labels): #given function
             idx = idx + 1
     return array_labels
 
-
-
-#PERSONAL FUNCTION BUT MAKE IT BETTER
-def createSubmission(model, window_size):
-    submission_filename = 'submission__epochs.csv'
-    image_filenames = []
-    prediction_test_dir = "predictions__epochs/"
-    if not os.path.isdir(prediction_test_dir):
-        os.mkdir(prediction_test_dir)
-    pred_filenames = []
-    for i in range(1, TEST_SIZE+1):
-        image_filename = '/content/drive/MyDrive/Colab Notebooks/datasets/test_set_images/test_' + str(i) +"/test_"+ str(i) +".png"
-        image_filenames.append(image_filename)
-    test_imgs = [mpimg.imread(image_filenames[i]) for i in range(TEST_SIZE)]
-    for i in range(TEST_SIZE):
-        pimg = get_prediction(test_imgs[i],model,window_size)
-        #save prediction next to the image
-        cimg = concatenate_images(test_imgs[i], pimg)
-        Image.fromarray(cimg).save(prediction_test_dir + "prediction_mask_" + str(i) + ".png")
-        w = pimg.shape[0]
-        h = pimg.shape[1]
-        gt_img_3c = numpy.zeros((w, h, 3), dtype=numpy.uint8)
-        gt_img8 = img_float_to_uint8(pimg)
-        gt_img_3c[:,:,0] = gt_img8
-        gt_img_3c[:,:,1] = gt_img8
-        gt_img_3c[:,:,2] = gt_img8
-        pred_filename = prediction_test_dir + "prediction_" + str(i+1) + ".png"
-        Image.fromarray(gt_img_3c).save(pred_filename)
-        pred_filenames.append(pred_filename)
-    masks_to_submission(submission_filename, *pred_filenames)
 
 #Method to take care of the values that are 253 or 254 on the groundtruth images
 def round(x):
@@ -399,13 +345,6 @@ def create_windows(image, window_size):
 
     return windows
 
-def pad_image_old(img, padSize):
-    is_2d = len(img.shape) < 3
-    if is_2d:
-        return np.lib.pad(img,((padSize,padSize),(padSize,padSize)),'reflect')
-    else:
-        return np.lib.pad(img,((padSize,padSize),(padSize,padSize),(0,0)),'reflect')
-
 def pad_image(image, pad_size):
     """
     Pads an image with the specified pad size.
@@ -422,92 +361,32 @@ def pad_image(image, pad_size):
         padding = padding + ((0, 0),)
     return np.pad(image, padding, mode='reflect')
 
-def image_generator_old(images, ground_truths, window_size, batch_size=64, upsample=False, class_weights={}):
-    np.random.seed(0)
-    imgWidth = images[0].shape[0]
-    imgHeight = images[0].shape[1]
-    half_patch = IMG_PATCH_SIZE // 2
 
-    padSize = (window_size - IMG_PATCH_SIZE) // 2
-    paddedImages = []
-    for image in images:
-        paddedImages.append(pad_image(image, padSize))
+def rotate_image(image, angle, img_width, img_height):
+    return rotation(image, img_width, img_height, angle, (img_width, img_height))
 
-    while True:
-        batch_input = []
-        batch_output = []
-        sample_weights = []  # Initialize list to store sample weights
 
-        # Rotates the whole batch for better performance
-        randomIndex = np.random.randint(0, len(images))
-        img = paddedImages[randomIndex]
-        gt = ground_truths[randomIndex]
+def calculate_boundary(rotation, img_width):
+    if rotation > 2:
+        return int((img_width - img_width / np.sqrt(2)) / 2)
+    return 0
 
-        # Rotate with probability 10 / 100
-        random_rotation = 0
-        if (np.random.randint(0, 100) < 10):
-            rotations = [90, 180, 270, 45, 135, 225, 315]
-            random_rotation = np.random.randint(0, 7)
-            img = rotation(img, imgWidth + 2 * padSize, imgHeight + 2 * padSize, rotations[random_rotation], (imgWidth, imgHeight))
-            gt = rotation(gt, imgWidth, imgHeight, rotations[random_rotation], (imgWidth, imgHeight))
+def get_random_center(half_patch_size, boundary, img_width, img_height):
+    x_center = np.random.randint(half_patch_size + boundary, img_width - half_patch_size - boundary)
+    y_center = np.random.randint(half_patch_size + boundary, img_height - half_patch_size - boundary)
+    return x_center, y_center
 
-        background_count = 0
-        road_count = 0
-        while len(batch_input) < batch_size:
-            x = np.empty((window_size, window_size, 3))
-            y = np.empty((window_size, window_size, 3))
+def extract_patch(image, x_center, y_center, half_patch_size, pad):
+    return image[x_center - half_patch_size : x_center + half_patch_size + 2 * pad,
+                y_center - half_patch_size : y_center + half_patch_size + 2 * pad]
 
-            # We need to limit possible centers to avoid having a window in an interpolated part of the image
-            # We limit ourselves to a square of width 1/sqrt(2) smaller
-            if (random_rotation > 2):
-                boundary = int((imgWidth - imgWidth / np.sqrt(2)) / 2)
-            else:
-                boundary = 0
-            center_x = np.random.randint(half_patch + boundary, imgWidth - half_patch - boundary)
-            center_y = np.random.randint(half_patch + boundary, imgHeight - half_patch - boundary)
-
-            x = img[center_x - half_patch:center_x + half_patch + 2 * padSize,
-                    center_y - half_patch:center_y + half_patch + 2 * padSize]
-            y = gt[center_x - half_patch:center_x + half_patch,
-                    center_y - half_patch:center_y + half_patch]
-
-            # Vertical flip
-            if (np.random.randint(0, 2)):
-                x = np.flipud(x)
-
-            # Horizontal flip
-            if (np.random.randint(0, 2)):
-                x = np.fliplr(x)
-
-            label = value_to_class(np.mean(y))
-
-            # Determine sample weight based on class
-            sample_weights = []
-            label_index = np.argmax(label)  # Get the index of the class (0 or 1)
-            weight = class_weights.get(label_index, 1.0)  # Get the weight for the class
-            sample_weights.append(weight) # Append the weight to the list
-
-            # Makes sure we have an even distribution of road and non-road if we oversample
-            if not upsample:
-                batch_input.append(x)
-                batch_output.append(label)
-            elif label == [1., 0.]:
-                # Case background
-                background_count += 1
-                if background_count != batch_size // 2:
-                    batch_input.append(x)
-                    batch_output.append(label)
-            elif label == [0., 1.]:
-                # Case road
-                road_count += 1
-                if road_count != batch_size // 2:
-                    batch_input.append(x)
-                    batch_output.append(label)
-
-        batch_x = np.array( batch_input )
-        batch_y = np.array( batch_output )
-
-        yield( batch_x, batch_y )
+        
+def apply_random_flip(patch):
+    if np.random.randint(0, 2):
+        patch = np.flipud(patch)
+    if np.random.randint(0, 2):
+        patch = np.fliplr(patch)
+    return patch
 
 def image_generator(images, ground_truths, window_size, batch_size=64, upsample=False, class_weights={}):
     """
@@ -526,85 +405,74 @@ def image_generator(images, ground_truths, window_size, batch_size=64, upsample=
     """
     np.random.seed(0)
 
-    img_width, img_height = images[0].shape[:2]
-    half_patch = window_size // 2
-
-    # Padding size to ensure proper patch extraction near edges
-    pad_size = (window_size - IMG_PATCH_SIZE) // 2
-    padded_images = [pad_image(image, pad_size) for image in images]
+    height, width = images[0].shape[:2]
+    padding = int((window_size - IMG_PATCH_SIZE) / 2)
+    padded_img = []
+    
+    
+    for image in images:
+        padded_img.append(pad_image(image, padding))
 
     while True:
-        batch_input, batch_output, sample_weights = [], [], []
+        batch_input = []
+        batch_output = []
+        sample_weights = []  # Initialize list to store sample weights
 
-        # Randomly select an image and its ground truth
-        random_idx = np.random.randint(0, len(images))
-        img, gt = padded_images[random_idx], ground_truths[random_idx]
+        # Rotates the whole batch for better performance
+        randomIndex = np.random.randint(0, len(images))
+        img = padded_img[randomIndex]
+        lab = ground_truths[randomIndex]
 
-        # Random rotation with a 10% probability
-        if np.random.rand() < 0.1:
-            rotations = [90, 180, 270, 45, 135, 225, 315]
-            rotation_angle = np.random.choice(rotations)
-            img = rotation(img, img_width + 2 * pad_size, img_height + 2 * pad_size, rotation_angle, (img_width, img_height))
-            gt = rotation(gt, img_width, img_height, rotation_angle, (img_width, img_height))
+        # Rotate with probability 10 / 100
+        random_rotation = 0
+        rotation_chance = np.random.random()
+        should_rotate = rotation_chance < 0.1
 
-        # Balance background and road samples if upsampling
-        background_count, road_count = 0, 0
+        if should_rotate:
+            angles = [90, 180, 270, 45, 135, 225, 315]
+            chosen_angle = angles[np.random.choice(range(len(angles)))]
+            rotated_img = rotate_image(img, chosen_angle, width + 2 * padding, height + 2 * padding)
+            rotated_lab = rotate_image(lab, chosen_angle, width, height)
 
+        background_count = 0
+        road_count = 0
         while len(batch_input) < batch_size:
-            # Limit centers to avoid interpolated parts of the image
-            boundary = int((img_width - img_width / np.sqrt(2)) / 2) if np.random.rand() < 0.1 else 0
-            center_x = np.random.randint(half_patch + boundary, img_width - half_patch - boundary)
-            center_y = np.random.randint(half_patch + boundary, img_height - half_patch - boundary)
+            x = np.empty((window_size, window_size, 3))
+            y = np.empty((window_size, window_size, 3))
+            
+            patch_boundary = calculate_boundary(random_rotation, width)
+            center_x, center_y = get_random_center(int(IMG_PATCH_SIZE / 2), patch_boundary, width, height)
+            x = extract_patch(img, center_x, center_y, int(IMG_PATCH_SIZE / 2), padding)
+            y = extract_patch(lab, center_x, center_y,  int(IMG_PATCH_SIZE / 2), 0)
+            
+            x = apply_random_flip(x)
 
-            # Extract patches
-            x_patch = img[center_x - half_patch:center_x + half_patch + 2 * pad_size,
-                          center_y - half_patch:center_y + half_patch + 2 * pad_size]
-            y_patch = gt[center_x - half_patch:center_x + half_patch,
-                          center_y - half_patch:center_y + half_patch]
+            label = value_to_class(np.mean(y))
 
-            # Random flips
-            if np.random.rand() < 0.5:
-                x_patch = np.flipud(x_patch)
-            if np.random.rand() < 0.5:
-                x_patch = np.fliplr(x_patch)
+            # Determine sample weight based on class
+            sample_weights = []
+            sample_weights.append(class_weights.get(np.argmax(label), 1.0)) 
 
-            # Label and weighting
-            label = value_to_class(np.mean(y_patch))
-            label_index = np.argmax(label)
-            weight = class_weights.get(label_index, 1.0)
-
-            if not upsample:
-                batch_input.append(x)
-                batch_output.append(label)
-            elif label == [1., 0.]:
+            # Makes sure we have an even distribution of road and non-road if we oversample
+            # if not upsample:
+            #     batch_input.append(x)
+            #     batch_output.append(label)
+            if label == [1., 0.]:
                 # Case background
-                background_count += 1
-                if background_count != batch_size // 2:
+                if background_count < batch_size // 2:
                     batch_input.append(x)
                     batch_output.append(label)
+                    background_count = background_count + 1
             elif label == [0., 1.]:
                 # Case road
-                road_count += 1
-                if road_count != batch_size // 2:
+                if road_count < batch_size // 2:
                     batch_input.append(x)
                     batch_output.append(label)
-            
+                    road_count = road_count + 1
 
-            batch_x = np.array(batch_input)
-            batch_y = np.array(batch_output)
-            # Append if conditions are met
-            #if not upsample or (label == [1., 0.] and background_count < batch_size // 2) or (label == [0., 1.] and road_count < batch_size // 2):
-            #    batch_input.append(x_patch)
-            #    batch_output.append(label)
-            #    sample_weights.append(weight)
+        batch_x = np.array(batch_input)
+        batch_y = np.array(batch_output)
 
-                # Update class counters
-            #    if label == [1., 0.]:
-            #        background_count += 1
-             #   elif label == [0., 1.]:
-             #       road_count += 1
-
-        yield (batch_x, batch_y)
-
-
-
+        yield( batch_x, batch_y )
+        
+        
