@@ -6,10 +6,12 @@ import tensorflow as tf
 from tensorflow.keras import  callbacks
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 import os
+from submission import *
 
 data_dir = os.getcwd() + '/dataset/training/'
 data_filename = data_dir + "images/"
 labels_filename = data_dir + "groundtruth/"
+
 
 data, labels = load_data(data_filename, labels_filename, TRAINING_SIZE)
 
@@ -32,5 +34,7 @@ history = model.fit(train_generator,steps_per_epoch=int((len(data))),
                     epochs=100,
                     callbacks=[early_stopping, lr_callback],
                     verbose=1)
+
+create_submission(model, 100)
 
 
