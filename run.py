@@ -5,13 +5,11 @@ from NNmodels import *
 import tensorflow as tf
 from tensorflow.keras import  callbacks
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
+import os
 
-
-
-data_dir = '/content/drive/MyDrive/Colab Notebooks/datasets/training/'
+data_dir = os.getcwd() + '/dataset/training/'
 data_filename = data_dir + "images/"
 labels_filename = data_dir + "groundtruth/"
-
 
 data, labels = load_data(data_filename, labels_filename, TRAINING_SIZE)
 
