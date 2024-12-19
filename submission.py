@@ -6,14 +6,17 @@ from helpers import *
 from constants import *
 TEST_SIZE = 50
 
+
+data_dir = os.getcwd() + '/dataset/test_set_images/'
+
 # Get prediction for given input image
 #https://github.com/yannvon/road-segmentation/tree/master
-def create_submission(model, window_size):
+def create_submission(model, window_size, data_dir):
     submission_filename = 'submission__epochs.csv'
     prediction_test_dir = "predictions__epochs/"
     pred_filenames = []
     for i in range(TEST_SIZE):
-        image_filename = '/content/drive/MyDrive/Colab Notebooks/datasets/test_set_images/test_' + str(i+1) +"/test_"+ str(i+1) +".png"
+        image_filename = data_dir + 'test_' + str(i+1) +"/test_"+ str(i+1) +".png"
         test_imgs = mpimg.imread(image_filename)  
         pimg = get_prediction(test_imgs,model,window_size)
         #save prediction next to the image
