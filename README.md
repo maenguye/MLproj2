@@ -116,7 +116,7 @@ This project explores the following machine learning techniques:
 
 ## Results
 The predictions were evaluated using the AI Crowd platform. The evaluation metrics are based on the overlap of predicted road masks with ground truth masks. For detailed results, refer to the output logs and the leaderboard on AI Crowd. 
-The test performance of our submission is of 0.800 (note : not the best score obtained on AICrowd)
+The test performance of our submission is of 0.800 (note : not the best score obtained on AICrowd). To create the submission, you need to create a file called 'predictions__epochs/'. 
 
 ---
 
