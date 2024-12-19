@@ -94,6 +94,7 @@ project-name/
 ├── README.md                     # Project documentation (this file)
 └── requirements.txt              # Python packages required
 ```
+Colab Notebook for the UNet : https://colab.research.google.com/drive/1-6K1LmQWXmCtCJPsc1lWkLVQjzRe500h?usp=sharing
 
 ---
 
