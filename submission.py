@@ -16,7 +16,7 @@ def create_submission(model, window_size, data_dir):
     prediction_test_dir = "predictions__epochs/"
     pred_filenames = []
     for i in range(TEST_SIZE):
-        image_filename = data_dir + 'test_' + str(i+1) +"/test_"+ str(i+1) +".png"
+        image_filename = data_dir + '/test_' + str(i+1) +"/test_"+ str(i+1) +".png"
         test_imgs = mpimg.imread(image_filename)  
         pimg = get_prediction(test_imgs,model,window_size)
         #save prediction next to the image
