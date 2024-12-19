@@ -12,6 +12,7 @@ data_dir = os.getcwd() + '/dataset/training/'
 data_filename = data_dir + "images/"
 labels_filename = data_dir + "groundtruth/"
 
+test_dir = os.getcwd() + '/dataset/test_set_images/'
 
 data, labels = load_data(data_filename, labels_filename, TRAINING_SIZE)
 
@@ -35,6 +36,6 @@ history = model.fit(train_generator,steps_per_epoch=int((len(data))),
                     callbacks=[early_stopping, lr_callback],
                     verbose=1)
 
-create_submission(model, 100)
+create_submission(model, 100,test_dir)
 
 
