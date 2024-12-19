@@ -45,9 +45,9 @@ To run this project, you need Python 3.7 or higher and the following libraries:
 - TorchVision
 - TQDM
 
-You can install the required packages using:
+You can install the required packages using for exemple:
 ```bash
-pip install numpy matplotlib tensorflow
+pip install numpy 
 ```
 For additional dependencies, refer to the `requirements.txt` file.
 
