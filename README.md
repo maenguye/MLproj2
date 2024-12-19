@@ -40,6 +40,10 @@ To run this project, you need Python 3.7 or higher and the following libraries:
 - Matplotlib
 - TensorFlow
 - CSV module (built-in with Python)
+- ⁠PIL
+- Torch
+- TorchVision
+- TQDM
 
 You can install the required packages using:
 ```bash
@@ -75,8 +79,10 @@ dataset/
 This repository is organized as follows:
 
 ```bash
-project-name/
+RoadSegementation/
 │
+├── Unet/                      # Unet Model
+│   ├── Pytorch-Unet                #Put the file next the Colab for the Unet to Work
 ├── .gitignore                    # Git ignore file
 ├── BasicCNN.ipynb                # Basic CNN model for experimentation
 ├── CNN.ipynb                     # Convolutional Neural Network implementation
