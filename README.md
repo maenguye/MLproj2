@@ -115,7 +115,7 @@ This project explores the following machine learning techniques:
 ---
 
 ## Results
-The predictions were evaluated using the AI Crowd platform. The evaluation metrics are based on the overlap of predicted road masks with ground truth masks. For detailed results, refer to the output logs and the leaderboard on AI Crowd. The final predictions are stored in a CSV file final_pred.csv for submission.
+The predictions were evaluated using the AI Crowd platform. The evaluation metrics are based on the overlap of predicted road masks with ground truth masks. For detailed results, refer to the output logs and the leaderboard on AI Crowd. 
 The test performance of our submission is of 0.800 (note : not the best score obtained on AICrowd)
 
 ---
