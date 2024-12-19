@@ -1,82 +1,127 @@
-# MLproj2
+# Road Segmentation Project
 
-## Project 2 (CS-433): Road Segmentation
-This project is part of the Machine Learning Course (CS-433). The primary goal of this project is to accurately distinguish between road and background areas within satellite images. The dataset consists of a hundred satellite images paired with corresponding binary ground truth masks, where roads are labeled as 1s and the background as 0s. 
+This repository contains **Project 2 (CS-433)**: Road Segmentation. The primary goal of this project is to accurately distinguish between road and background areas within satellite images using machine learning models.
+
+## Table of Contents
+- [Getting Started](#getting-started)
+- [Dependencies](#dependencies)
+- [Dataset](#dataset)
+- [Project Structure](#project-structure)
+- [Implemented Methods](#implemented-methods)
+- [Results](#results)
+- [Usage Instructions](#usage-instructions)
+- [Contributors](#contributors)
+
+---
 
 ## Getting Started
-To get started with this project, follow the steps below:
+Follow these steps to set up and run the project:
 
-1. Clone the repository to your local machine.
-2. Install the required dependencies.
-3. Load the dataset and place it in the designated folder.
-4. Run the main script run.py to execute the project.
+1. **Clone the repository** to your local machine:
+    ```bash
+    git clone <repository-url>
+    cd <repository-directory>
+    ```
+2. **Install dependencies** (see [Dependencies](#dependencies)).
+3. **Prepare the dataset**:
+    - Place the training images and their corresponding ground truth masks in the `dataset/training` folder.
+    - Place the test images in the `dataset/test_set_images` folder.
+4. **Run the main script** to execute the project:
+    ```bash
+    python run.py
+    ```
+
+---
 
 ## Dependencies
-To run this project, you will need to install the following dependencies:
+To run this project, you need Python 3.7 or higher and the following libraries:
 
-Python 3.7 (or higher)
-NumPy
-Matplotlib
-csv
-You can install these dependencies by running the following command:
+- NumPy
+- Matplotlib
+- TensorFlow
+- CSV module (built-in with Python)
 
-pip install numpy matplotlib
+You can install the required packages using:
+```bash
+pip install numpy matplotlib tensorflow
+```
+For additional dependencies, refer to the `requirements.txt` file.
+
+---
 
 ## Dataset
-The dataset used in this project is divided into :
+The dataset consists of satellite images and their corresponding binary ground truth masks:
 
-training folder : images and their corresponding groundtruth to train the model
-test_set_images folder : images to evalute the model and to the prediction with the submission on AI Crowd
-These files should be in the dataset folder, located on the same directory as the code when running the project.
+- **Training Data**:
+  - Images: Satellite images for training the model.
+  - Ground Truth: Binary masks where roads are labeled as 1, and the background as 0.
+
+- **Test Data**:
+  - Images: Satellite images for evaluation and prediction submission on the AI Crowd platform.
+
+Ensure the dataset is structured as follows:
+
+```bash
+dataset/
+├── training/
+│   ├── images/           # Training images
+│   └── groundtruth/      # Corresponding ground truth masks
+└── test_set_images/      # Test images
+```
+
+---
 
 ## Project Structure
-This repository contains the following main components:
-
-# Project tree
+This repository is organized as follows:
 
 ```bash
 project-name/
 │
-├── .DS_Store                        # macOS system file (can be ignored)
-├── .gitignore                        # Git ignore file
-├── BasicCNN.ipynb                    # Basic CNN model implementation (for experimentation)
-├── CNN.ipynb                          # Convolutional neural network model for the main task
-├── helpers/                           # Folder containing helper scripts for different tasks
-│   ├── mask_to_submission.py          # Converts mask to a submission-ready format
-│   ├── segment_aerial_images.ipynb    # Jupyter notebook for segmenting aerial images
-│   ├── submission_to_mask.py          # Converts submission data back into a mask format
-│   └── tf_aerial_images.py            # TensorFlow-specific utilities for processing aerial images
+├── .gitignore                    # Git ignore file
+├── BasicCNN.ipynb                # Basic CNN model for experimentation
+├── CNN.ipynb                     # Convolutional Neural Network implementation
+├── helpers/                      # Helper scripts
+│   ├── mask_to_submission.py     # Converts masks to submission-ready format
+│   ├── segment_aerial_images.ipynb # Notebook for aerial image segmentation
+│   ├── submission_to_mask.py     # Converts submission data back into mask format
+│   └── tf_aerial_images.py       # TensorFlow utilities for aerial images
 │
-├── ModelLeo.py                        # Core model training and evaluation code (main model)
-├── RoadDataset.py                     # Dataset handling and data loading utilities
-├── constants.py                       # Constants used throughout the project (e.g., paths, configuration)
-├── helpers.py                         # General helper functions used across the project
-├── linear.ipynb                       # Linear regression implementation for experimentation or alternative model
-├── README.md                          # This file
-└── requirements.txt                   # Required Python packages for the project can i use this code ?
+├── NNmodels.py                 # Models of the basic neural network and the convolutional
+├── submission.py                # Function to submit the csv file 
+├── constants.py                  # Constants (e.g., paths, configurations)
+├── helpers.py                    # General helper functions 
+├── linear.ipynb                  # Logistic Regression and the SVM
+├── README.md                     # Project documentation (this file)
+└── requirements.txt              # Python packages required
 ```
 
+---
 
-Required Python packages for the project
+## Implemented Methods
+This project explores the following machine learning techniques:
 
-## Methods implemented
-The following machine learning techniques have been implemented from scratch (as required):
+1. **Linear Regression** (Logistic Regression and SVM)
+2. **Basic Neural Network**
+3. **Convolutional Neural Network (CNN)**
+4. **U-Net Architecture**
 
-Linear Regression (Logistic Regression and SVM)
-Basic Neural Netork 
-Convolutional Neural Network 
-U-Net 
-
+---
 
 ## Results
-We evaluated the model using cross-validation and submitted our predictions to the competition platform for feedback.
+The predictions were evaluated using the AI Crowd platform. The evaluation metrics are based on the overlap of predicted road masks with ground truth masks. For detailed results, refer to the output logs and the leaderboard on AI Crowd.
 
-The final predictions are stored in a CSV file final_pred.csv for submission.
+---
 
+## Usage Instructions
+1. Ensure the dataset is placed in the `dataset` folder.
+2. Run the following command to execute the main script and generate predictions:
+    ```bash
+    python run.py
+    ```
+3. The output will be saved as a CSV file in the current directory, ready for submission on the AI Crowd platform.
 
-## How to use
-Ensure the dataset is placed in the dataset_to_release folder.
-Run the following command to execute the main script and generate predictions:
-python run.py
-The output will be saved as a CSV file in the current directory.
-Contributors
+---
+
+## Contributors
+Melina Cherchali, Léo Cusumano, Maëlyne Nguyen
+
