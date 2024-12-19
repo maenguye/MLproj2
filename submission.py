@@ -1,23 +1,21 @@
 import numpy as np
 import os
 import matplotlib.image as mpimg
-
+from PIL import Image
+from helpers import *
+from constants import *
 TEST_SIZE = 50
 
-def createSubmission(model, window_size):
-    submission_filename = 'submission__test.csv'
-    image_filenames = []
-    prediction_test_dir = "predictions__test/"
-    if not os.path.isdir(prediction_test_dir):
-        os.mkdir(prediction_test_dir)
+def create_submission(model, window_size):
+    submission_filename = 'submission__epochs.csv'
+    prediction_test_dir = "predictions__epochs/"
     pred_filenames = []
-    for i in range(1, TEST_SIZE+1):
-        image_filename = '/content/drive/MyDrive/Colab Notebooks/datasets/test_set_images/test_' + str(i) +"/test_"+ str(i) +".png"
-        image_filenames.append(image_filename)
-        #test_imgs = [mpimg.imread(image_filename)]
-    test_imgs = [mpimg.imread(image_filenames[i]) for i in range(TEST_SIZE)]
     for i in range(TEST_SIZE):
-        pimg = get_prediction(test_imgs[i],model,window_size)
+        image_filename = '/content/drive/MyDrive/Colab Notebooks/datasets/test_set_images/test_' + str(i+1) +"/test_"+ str(i+1) +".png"
+        test_imgs = mpimg.imread(image_filename)  
+        pimg = get_prediction(test_imgs,model,window_size)
+        #save prediction next to the image
+        print(pimg)
         w = pimg.shape[0]
         h = pimg.shape[1]
         gt_img_3c = np.zeros((w, h, 3), dtype=np.uint8)
