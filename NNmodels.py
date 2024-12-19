@@ -1,12 +1,5 @@
-import gzip
-import os
-import sys
-import urllib
-import matplotlib.image as mpimg
-from PIL import Image
-import code
-import matplotlib.pyplot as plt
 
+from helpers import *
 import sys
 import tensorflow as tf
 from tensorflow.keras import layers, models
@@ -113,3 +106,9 @@ def BasicModel(input_shape, num_classes=2):
     model.summary()
     
     return model
+
+
+def data_generators(train_data, train_labels, WINDOW_SIZE, batch_size=32):
+    c_weights = {0: 2.8, 1: 1}
+    train_generator = image_generator(train_data,train_labels,WINDOW_SIZE,batch_size=batch_size,class_weights = c_weights)
+    return train_generator
