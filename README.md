@@ -123,5 +123,7 @@ The predictions were evaluated using the AI Crowd platform. The evaluation metri
 ---
 
 ## Contributors
-Melina Cherchali, Léo Cusumano, Maëlyne Nguyen
+
+[@maenguye](https://github.com/maenguye)
+[@CusumanoLeo](https://github.com/Cusumano) [@melinacherchali](https://github.com/melinacherchali) 
 
